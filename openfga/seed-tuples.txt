@@ -1,0 +1,13 @@
+# Tuplas guardadas en OpenFGA: estructura (organizacion->tenant, equipo->organizacion) y recursos.
+# Formato: <user> <relation> <object>. Deben coincidir con los documentos semilla de documents-api.
+# Las membresias de las personas NO van aqui: llegan como tuplas contextuales desde el token.
+tenant:acme tenant organization:acme-ventas
+tenant:acme tenant organization:acme-marketing
+tenant:globex tenant organization:globex-main
+organization:acme-ventas organization team:acme-ventas-norte
+organization:acme-ventas organization team:acme-ventas-sur
+team:acme-ventas-norte team document:42
+team:acme-ventas-sur team document:43
+organization:acme-ventas organization document:44
+organization:acme-marketing organization document:77
+user:bob owner document:43

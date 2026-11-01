@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Identity Lab</title>
+  <style>
+    :root { --bg: #f7f7f5; --fg: #1d1d1b; --muted: #6b6b66; --line: #ddddd6; --accent: #2563eb; --ok: #15803d; --bad: #b91c1c; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #161615; --fg: #ececea; --muted: #a3a39d; --line: #333330; --accent: #60a5fa; --ok: #4ade80; --bad: #f87171; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+    main { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    p.lead { color: var(--muted); margin: 0 0 24px; }
+    section { border-top: 1px solid var(--line); padding: 16px 0; }
+    h2 { font-size: 15px; margin: 0 0 8px; }
+    button, select, input { font: inherit; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--fg); }
+    button { cursor: pointer; } button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 6px 0; }
+    pre { background: color-mix(in srgb, var(--fg) 6%, transparent); padding: 12px; border-radius: 6px; overflow: auto; font-size: 13px; max-height: 360px; }
+    .ok { color: var(--ok); } .bad { color: var(--bad); }
+    #log li { font-family: ui-monospace, monospace; font-size: 13px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/oidc-client-ts@3/dist/browser/oidc-client-ts.min.js"></script>
+</head>
+<body>
+<main>
+  <h1>Identity Lab</h1>
+  <p class="lead">Entra (mock) solo para iniciar sesion &rarr; JWT exchange &rarr; todo lo demas con el token propio y OpenFGA.</p>
+
+  <section>
+    <h2>1. Iniciar sesion en Entra (mock)</h2>
+    <div class="row">
+      <button class="primary" id="login">Iniciar sesion</button>
+      <span style="color:var(--muted)">En la pantalla del mock escribe <b>alice</b>, <b>bob</b>, <b>carol</b> o <b>dave</b> como usuario.</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Sesion propia</h2>
+    <div class="row">
+      <select id="orgs"></select>
+      <button id="switch">Cambiar organizacion</button>
+      <button id="refresh">Renovar token</button>
+      <button id="logout">Cerrar sesion</button>
+    </div>
+    <pre id="me">Sin sesion.</pre>
+  </section>
+
+  <section>
+    <h2>3. Documentos (autoriza OpenFGA con tuplas contextuales)</h2>
+    <div class="row">
+      <button id="list">Listar</button>
+      <input id="docId" placeholder="id" size="5" value="42">
+      <button id="read">Leer</button>
+      <button id="edit">Editar</button>
+      <button id="del">Borrar</button>
+      <button id="whoami">Ver claims y tuplas</button>
+    </div>
+    <pre id="out"></pre>
+    <ul id="log"></ul>
+  </section>
+</main>
+<script>
+  const mgr = new oidc.UserManager({
+    authority: 'http://localhost:8090/entra',
+    client_id: 'lab-spa',
+    redirect_uri: window.location.origin + '/',
+    response_type: 'code',
+    scope: 'openid token-exchange-service',
+    loadUserInfo: false,
+  });
+
+  const $ = (id) => document.getElementById(id);
+  const xsrf = () => (document.cookie.split('; ').find(c => c.startsWith('XSRF-TOKEN=')) || '').split('=')[1] || '';
+
+  async function call(method, url, body, form) {
+    const headers = { 'X-XSRF-TOKEN': xsrf() };
+    let payload;
+    if (form) { headers['Content-Type'] = 'application/x-www-form-urlencoded'; payload = new URLSearchParams(form); }
+    else if (body) { headers['Content-Type'] = 'application/json'; payload = JSON.stringify(body); }
+    const res = await fetch(url, { method, headers, body: payload, credentials: 'same-origin' });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch { data = text; }
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="${res.ok ? 'ok' : 'bad'}">${res.status}</span> ${method} ${url}`;
+    $('log').prepend(li);
+    return { status: res.status, data };
+  }
+
+  async function showSession() {
+    const r = await call('GET', '/session/me');
+    if (r.status !== 200) { $('me').textContent = 'Sin sesion.'; $('orgs').innerHTML = ''; return; }
+    $('me').textContent = JSON.stringify(r.data, null, 2);
+    $('orgs').innerHTML = r.data.organizations
+      .map(o => `<option value="${o.tenantId}|${o.organizationId}" ${r.data.context && r.data.context.organization.id === o.organizationId ? 'selected' : ''}>${o.tenantId} / ${o.organizationId} (${o.role})</option>`)
+      .join('');
+  }
+
+  async function afterLoginRedirect() {
+    if (!new URLSearchParams(location.search).has('code')) return;
+    const user = await mgr.signinRedirectCallback();
+    history.replaceState({}, '', '/');
+    // El token de Entra se usa UNA vez: se cambia por la sesion propia y se olvida.
+    await call('POST', '/token/exchange', null, {
+      grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+      subject_token: user.access_token,
+      subject_token_type: 'urn:ietf:params:oauth:token-type:access_token',
+    });
+    await mgr.removeUser();
+  }
+
+  const show = (r) => { $('out').textContent = JSON.stringify(r.data, null, 2); };
+
+  $('login').onclick = () => mgr.signinRedirect();
+  $('refresh').onclick = async () => { show(await call('POST', '/session/refresh')); showSession(); };
+  $('logout').onclick = async () => { await call('POST', '/session/logout'); showSession(); };
+  $('switch').onclick = async () => {
+    const [tenant, organization] = $('orgs').value.split('|');
+    show(await call('POST', '/session/context', { tenant, organization }));
+    showSession();
+  };
+  $('list').onclick = async () => show(await call('GET', '/api/documents'));
+  $('read').onclick = async () => show(await call('GET', '/api/documents/' + $('docId').value));
+  $('edit').onclick = async () => show(await call('PUT', '/api/documents/' + $('docId').value, { title: 'Editado ' + new Date().toLocaleTimeString() }));
+  $('del').onclick = async () => show(await call('DELETE', '/api/documents/' + $('docId').value));
+  $('whoami').onclick = async () => show(await call('GET', '/api/whoami'));
+
+  afterLoginRedirect().then(showSession);
+</script>
+</body>
+</html>

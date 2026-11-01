@@ -1,0 +1,3 @@
+// Dominio puro: sin dependencias de Spring ni de infraestructura.
+dependencies {
+}

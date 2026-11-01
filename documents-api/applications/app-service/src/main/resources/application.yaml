@@ -1,0 +1,35 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: documents-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/documents
+    username: postgres
+    password: postgres
+  flyway:
+    locations: classpath:db/migration
+
+lab:
+  # Solo se aceptan tokens emitidos por el servicio de exchange.
+  token-issuer: http://localhost/token
+  token-jwks-uri: http://localhost:8082/token/.well-known/jwks.json
+  audience: documents-api
+  cookies-secure: true
+  fga:
+    api-url: http://localhost:8080
+    store-name: identity-lab
+    # Carpeta con model.json y seed-tuples.txt (la carpeta openfga/ del repo).
+    files-dir: ../openfga
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    # En INFO se imprime cada Check con sus tuplas contextuales.
+    co.com.lab.openfga: INFO

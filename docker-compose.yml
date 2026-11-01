@@ -56,10 +56,8 @@ services:
 
   token-exchange-service:
     build:
-      context: .
-      dockerfile: infra/docker/Dockerfile
-      args:
-        MODULE: token-exchange-service
+      context: ./token-exchange-service
+      dockerfile: deployment/Dockerfile
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/exchange
       SPRING_DATASOURCE_USERNAME: postgres
@@ -75,10 +73,8 @@ services:
 
   documents-api:
     build:
-      context: .
-      dockerfile: infra/docker/Dockerfile
-      args:
-        MODULE: documents-api
+      context: ./documents-api
+      dockerfile: deployment/Dockerfile
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/documents
       SPRING_DATASOURCE_USERNAME: postgres
@@ -87,6 +83,9 @@ services:
       LAB_TOKEN_JWKS_URI: http://token-exchange-service:8082/token/.well-known/jwks.json
       LAB_COOKIES_SECURE: "true"
       LAB_FGA_API_URL: http://openfga:8080
+      LAB_FGA_FILES_DIR: /openfga
+    volumes:
+      - ./openfga:/openfga:ro
     ports:
       - "8081:8081"
     depends_on:

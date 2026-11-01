@@ -1,0 +1,33 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'co.com.bancolombia.cleanArchitecture.settings' version '5.0.2'
+}
+
+rootProject.name = 'Documents'
+
+/* --- Application --- */
+include ':app-service'
+project(':app-service').projectDir = file('./applications/app-service')
+
+/* --- Domain --- */
+include ':model'
+project(':model').projectDir = file('./domain/model')
+include ':usecase'
+project(':usecase').projectDir = file('./domain/usecase')
+
+/* --- Infrastructure --- */
+/* --- Driven Adapters --- */
+include ':jdbc-repository'
+project(':jdbc-repository').projectDir = file('./infrastructure/driven-adapters/jdbc-repository')
+include ':openfga-adapter'
+project(':openfga-adapter').projectDir = file('./infrastructure/driven-adapters/openfga-adapter')
+
+/* --- Entry Points --- */
+include ':api-rest'
+project(':api-rest').projectDir = file('./infrastructure/entry-points/api-rest')

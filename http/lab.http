@@ -1,0 +1,64 @@
+### Requests para el cliente HTTP de IntelliJ (guarda cookies entre llamadas automaticamente).
+### Orden sugerido: 1 -> 2 -> 3... Cambia "alice" por bob, carol o dave.
+
+### 1. "Inicio de sesion en Entra" (mock): token emitido para el servicio de exchange
+POST http://localhost:8090/entra/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=alice&client_secret=lab&scope=token-exchange-service
+
+> {% client.global.set("entra_token", response.body.access_token); %}
+
+### 2. JWT exchange: token de Entra -> sesion propia + JWT propio (cookies __Host-sid y __Host-at)
+POST http://localhost/token/exchange
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange&subject_token={{entra_token}}&subject_token_type=urn:ietf:params:oauth:token-type:access_token&tenant=acme&organization=acme-ventas&return_token=true
+
+> {% client.global.set("access_token", response.body.access_token); %}
+
+### 3. Que trae el token propio y que tuplas contextuales genera
+GET http://localhost/api/whoami
+
+### 4. Documentos visibles para la organizacion activa
+GET http://localhost/api/documents
+
+### 5. Editar document:42 (alice es lead del equipo norte -> 200)
+PUT http://localhost/api/documents/42
+Content-Type: application/json
+X-XSRF-TOKEN: {{$cookie.XSRF-TOKEN}}
+
+{"title": "Plan Norte v2"}
+
+### 6. Leer document:77 de marketing (alice esta en ventas -> 403)
+GET http://localhost/api/documents/77
+
+### 7. Cambiar de organizacion (sin volver a Entra)
+POST http://localhost/session/context
+Content-Type: application/json
+X-XSRF-TOKEN: {{$cookie.XSRF-TOKEN}}
+
+{"tenant": "acme", "organization": "acme-marketing"}
+
+### 8. Renovar el JWT propio (rota la sesion, relee membresias)
+POST http://localhost/session/refresh
+X-XSRF-TOKEN: {{$cookie.XSRF-TOKEN}}
+
+### 9. Datos de la sesion
+GET http://localhost/session/me
+
+### 10. Servicio a servicio: token propio -> token para reports-api con "act"
+POST http://localhost/token/exchange
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange&subject_token={{access_token}}&audience=reports-api&actor=documents-api
+
+### 11. JWKS del emisor propio
+GET http://localhost/token/.well-known/jwks.json
+
+### 12. Rotar la llave de firma (solo laboratorio)
+POST http://localhost:8082/token/admin/rotate-keys
+
+### 13. Cerrar sesion
+POST http://localhost/session/logout
+X-XSRF-TOKEN: {{$cookie.XSRF-TOKEN}}

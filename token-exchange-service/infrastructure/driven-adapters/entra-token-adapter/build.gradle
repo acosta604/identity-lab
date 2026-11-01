@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':model')
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    // NimbusJwtDecoder: descarga y cachea el JWKS de Entra y valida firma, iss, exp/nbf y aud.
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+}

@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':model')
+    implementation project(':usecase')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Valida el JWT propio (firma con el JWKS del servicio de exchange, iss, aud, exp).
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+}

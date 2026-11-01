@@ -1,0 +1,10 @@
+plugins {
+    id 'co.com.bancolombia.cleanArchitecture'
+    id 'org.springframework.boot' apply false
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}

@@ -1,0 +1,15 @@
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    implementation project(':model')
+    implementation project(':usecase')
+    implementation project(':jdbc-repository')
+    implementation project(':openfga-adapter')
+    implementation project(':api-rest')
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'co.com.bancolombia.cleanArchitecture.settings' version '5.0.2'
+}
+
+rootProject.name = 'TokenExchange'
+
+/* --- Application --- */
+include ':app-service'
+project(':app-service').projectDir = file('./applications/app-service')
+
+/* --- Domain --- */
+include ':model'
+project(':model').projectDir = file('./domain/model')
+include ':usecase'
+project(':usecase').projectDir = file('./domain/usecase')
+
+/* --- Infrastructure --- */
+/* --- Driven Adapters --- */
+include ':jdbc-repository'
+project(':jdbc-repository').projectDir = file('./infrastructure/driven-adapters/jdbc-repository')
+include ':internal-jwt-adapter'
+project(':internal-jwt-adapter').projectDir = file('./infrastructure/driven-adapters/internal-jwt-adapter')
+include ':entra-token-adapter'
+project(':entra-token-adapter').projectDir = file('./infrastructure/driven-adapters/entra-token-adapter')
+
+/* --- Entry Points --- */
+include ':api-rest'
+project(':api-rest').projectDir = file('./infrastructure/entry-points/api-rest')
