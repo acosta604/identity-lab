@@ -1,0 +1,46 @@
+meta {
+  name: JWT exchange (token de Entra a sesion propia)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/token/exchange
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+  subject_token: {{entraToken}}
+  subject_token_type: urn:ietf:params:oauth:token-type:access_token
+  tenant: {{tenant}}
+  organization: {{organization}}
+  return_token: true
+}
+
+script:post-response {
+  bru.setVar("accessToken", res.body.access_token);
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("deja las cookies de sesion, JWT propio y CSRF", function () {
+    expect(bru.getVar("sid")).to.not.be.empty;
+    expect(bru.getVar("at")).to.not.be.empty;
+    expect(bru.getVar("xsrf")).to.not.be.empty;
+  });
+
+  test("el contexto trae organizacion y equipos", function () {
+    expect(res.body.context.organization.id).to.equal(bru.getEnvVar("organization"));
+  });
+}
+
+docs {
+  El unico momento en que se usa el token de Entra. El servicio lo valida, lo descarta,
+  crea la sesion propia y responde con las cookies `__Host-sid`, `__Host-at` y `XSRF-TOKEN`.
+  `return_token=true` es solo de laboratorio: devuelve tambien el JWT en el cuerpo para verlo.
+}

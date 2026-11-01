@@ -1,0 +1,25 @@
+meta {
+  name: POST sin header CSRF
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/session/refresh
+  body: none
+  auth: none
+}
+
+headers {
+  X-XSRF-TOKEN: incorrecto
+}
+
+tests {
+  test("responde 403", function () {
+    expect(res.status).to.equal(403);
+  });
+}
+
+docs {
+  Con cookies de sesion, toda peticion que cambia estado necesita X-XSRF-TOKEN igual a la cookie XSRF-TOKEN.
+}

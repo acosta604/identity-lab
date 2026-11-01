@@ -1,0 +1,21 @@
+meta {
+  name: Consultar la sesion
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/session/me
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  Usuario, contexto activo y organizaciones disponibles. No pasa por Entra.
+}

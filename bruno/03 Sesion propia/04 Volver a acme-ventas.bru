@@ -1,0 +1,24 @@
+meta {
+  name: Volver a acme-ventas
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/session/context
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenant": "acme",
+    "organization": "acme-ventas"
+  }
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}

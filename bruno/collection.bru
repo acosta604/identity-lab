@@ -1,0 +1,39 @@
+headers {
+  Cookie: {{cookiePrefix}}sid={{sid}}; {{cookiePrefix}}at={{at}}; XSRF-TOKEN={{xsrf}}
+  X-XSRF-TOKEN: {{xsrf}}
+}
+
+script:pre-request {
+  // Las cookies se manejan con variables (sid, at, xsrf) para ver exactamente que viaja
+  // y no depender del manejo de cookies Secure / __Host- del cliente sobre http://localhost.
+  for (const name of ["sid", "at", "xsrf"]) {
+    if (bru.getVar(name) === undefined) {
+      bru.setVar(name, "");
+    }
+  }
+}
+
+script:post-response {
+  // Captura las cookies que pone el servicio de exchange (Set-Cookie) y las guarda en variables.
+  const raw = res.getHeader("set-cookie");
+  const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  const names = { "__Host-sid": "sid", sid: "sid", "__Host-at": "at", at: "at", "XSRF-TOKEN": "xsrf" };
+  for (const cookie of list) {
+    const pair = cookie.split(";")[0];
+    const i = pair.indexOf("=");
+    const name = pair.slice(0, i).trim();
+    if (names[name]) {
+      bru.setVar(names[name], pair.slice(i + 1).trim());
+    }
+  }
+}
+
+docs {
+  # Identity Lab en Bruno
+
+  Ejecuta las carpetas en orden (01, 02, 03...). La guia completa esta en `docs/bruno.md`.
+
+  - La persona se elige con la variable de entorno `user` (alice, bob, carol, dave).
+  - Las cookies `__Host-sid`, `__Host-at` y `XSRF-TOKEN` se guardan en las variables `sid`, `at` y `xsrf`
+    y se envian en cada peticion, junto con el header `X-XSRF-TOKEN`.
+}

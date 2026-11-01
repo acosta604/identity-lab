@@ -1,0 +1,25 @@
+meta {
+  name: Cerrar sesion
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/session/logout
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 204", function () {
+    expect(res.status).to.equal(204);
+  });
+
+  test("borra las cookies", function () {
+    expect(bru.getVar("sid")).to.equal("");
+  });
+}
+
+docs {
+  Revoca la sesion propia y borra las cookies. Para otra persona cambia `user` y vuelve a 01.
+}

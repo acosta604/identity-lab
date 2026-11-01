@@ -1,0 +1,32 @@
+meta {
+  name: Cambiar a acme-marketing
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/session/context
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tenant": "acme",
+    "organization": "acme-marketing"
+  }
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("el contexto cambio", function () {
+    expect(res.body.context.organization.id).to.equal("acme-marketing");
+  });
+}
+
+docs {
+  Emite un JWT nuevo con la otra organizacion. Sin volver a Entra.
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Leer el documento creado
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/documents/{{newDocId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}

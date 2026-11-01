@@ -1,0 +1,21 @@
+meta {
+  name: Rotar la llave de firma (lab)
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8082/token/admin/rotate-keys
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  Genera una llave nueva. Los tokens firmados con la anterior siguen validos hasta vencer.
+}

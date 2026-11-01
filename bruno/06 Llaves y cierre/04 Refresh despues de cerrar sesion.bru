@@ -1,0 +1,17 @@
+meta {
+  name: Refresh despues de cerrar sesion
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/session/refresh
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}

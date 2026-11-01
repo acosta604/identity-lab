@@ -1,0 +1,27 @@
+meta {
+  name: Exchange con token para Graph
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/token/exchange
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+  subject_token: {{graphToken}}
+  subject_token_type: urn:ietf:params:oauth:token-type:access_token
+}
+
+tests {
+  test("responde 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}
+
+docs {
+  El token de Entra debe haber sido emitido para el exchange (aud). Si no, 401.
+}

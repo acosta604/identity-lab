@@ -1,0 +1,28 @@
+meta {
+  name: Entra como mallory (sin usuario interno)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{entraUrl}}/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: client_credentials
+  client_id: mallory
+  client_secret: lab
+  scope: token-exchange-service
+}
+
+script:post-response {
+  bru.setVar("malloryToken", res.body.access_token);
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}

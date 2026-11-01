@@ -1,0 +1,33 @@
+meta {
+  name: Crear documento en el equipo norte
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/documents
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Documento nuevo",
+    "body": "Creado desde Bruno",
+    "teamId": "acme-ventas-norte"
+  }
+}
+
+script:post-response {
+  bru.setVar("newDocId", res.body.id);
+}
+
+tests {
+  test("responde 201", function () {
+    expect(res.status).to.equal(201);
+  });
+}
+
+docs {
+  Crea el documento y escribe en OpenFGA las tuplas del recurso (team y owner).
+}

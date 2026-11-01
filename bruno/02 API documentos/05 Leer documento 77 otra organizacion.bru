@@ -1,0 +1,22 @@
+meta {
+  name: Leer documento 77 (otra organizacion)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/documents/77
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 403", function () {
+    expect(res.status).to.equal(403);
+  });
+}
+
+docs {
+  El documento es de acme-marketing. El token de alice es de acme-ventas, asi que la tupla
+  `user:alice member organization:acme-marketing` no llega a OpenFGA y el Check da denegado.
+}

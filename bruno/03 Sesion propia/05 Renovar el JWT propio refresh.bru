@@ -1,0 +1,27 @@
+meta {
+  name: Renovar el JWT propio (refresh)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/session/refresh
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("la sesion se roto", function () {
+    expect(res.getHeader("set-cookie").join(";")).to.contain("sid=");
+  });
+}
+
+docs {
+  Rota el secreto de la sesion y relee las membresias en la base. Prueba: quita a alice del equipo
+  norte en la base `exchange` (tabla team_memberships), ejecuta este refresh y luego
+  "02/03 Editar documento 42": ahora da 403.
+}

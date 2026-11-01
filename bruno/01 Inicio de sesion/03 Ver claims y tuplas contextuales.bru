@@ -1,0 +1,27 @@
+meta {
+  name: Ver claims y tuplas contextuales
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/whoami
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("el token propio trae los claims del contexto", function () {
+    expect(res.body.claims.tid).to.equal(bru.getEnvVar("tenant"));
+    expect(res.body.contextual_tuples.length).to.be.greaterThan(1);
+  });
+}
+
+docs {
+  Muestra el JWT propio decodificado y las tuplas contextuales que documents-api envia a OpenFGA
+  en cada Check. Las membresias nunca se guardan en OpenFGA.
+}

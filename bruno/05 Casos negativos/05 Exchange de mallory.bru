@@ -1,0 +1,27 @@
+meta {
+  name: Exchange de mallory
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/token/exchange
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+  subject_token: {{malloryToken}}
+  subject_token_type: urn:ietf:params:oauth:token-type:access_token
+}
+
+tests {
+  test("responde 403", function () {
+    expect(res.status).to.equal(403);
+  });
+}
+
+docs {
+  La identidad es valida en Entra pero no esta vinculada a un usuario interno.
+}

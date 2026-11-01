@@ -1,0 +1,21 @@
+meta {
+  name: Leer documento 77 otra vez
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/documents/77
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  Ahora la tupla de acme-marketing si llega como contextual: permitido.
+}

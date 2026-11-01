@@ -6,7 +6,13 @@ Laboratorio para entender la solucion de identidad y autorizacion:
 
 Todo corre en local con Docker y herramientas gratuitas. Entra ID se simula con [mock-oauth2-server](https://github.com/navikt/mock-oauth2-server).
 
-**→ [Guía paso a paso para correrlo y probarlo en local](docs/guia-local.md)**
+**¿Por dónde empiezo?** → [LEEME-PRIMERO.md](LEEME-PRIMERO.md) (orden de lectura)
+
+| Documento | Para qué |
+| --- | --- |
+| [Guía local](docs/guia-local.md) | Instalar, configurar, correr y probar en tu máquina |
+| [Pruebas con Bruno](docs/bruno.md) | El flujo petición por petición |
+| [Glosario](docs/glosario.md) | OIDC, `iss`, `aud`, tuplas contextuales, `__Host-`… |
 
 ## Arquitectura funcional
 
@@ -101,7 +107,7 @@ La primera vez tarda (descarga imagenes y dependencias de Gradle). Cuando `docum
 
 - http://localhost — front minimo: inicia sesion en el mock con usuario `alice`, `bob`, `carol` o `dave`.
 - http://localhost:3000 — Playground de OpenFGA.
-- `http/lab.http` en IntelliJ — el flujo paso a paso.
+- `http/lab.http` en IntelliJ o la colección `bruno/` en [Bruno](docs/bruno.md) — el flujo paso a paso.
 
 Empezar de cero (borra bases y store de OpenFGA): `docker compose down -v`.
 

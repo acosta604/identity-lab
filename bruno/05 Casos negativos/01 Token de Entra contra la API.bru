@@ -1,0 +1,25 @@
+meta {
+  name: Token de Entra contra la API
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/documents
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{entraToken}}
+}
+
+tests {
+  test("responde 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}
+
+docs {
+  Las APIs solo aceptan el JWT propio: el token de Entra se rechaza aunque este bien firmado.
+}

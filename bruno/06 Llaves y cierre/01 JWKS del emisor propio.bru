@@ -1,0 +1,21 @@
+meta {
+  name: JWKS del emisor propio
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/token/.well-known/jwks.json
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  Llaves publicas con las que las APIs validan el JWT propio sin llamar al servicio.
+}

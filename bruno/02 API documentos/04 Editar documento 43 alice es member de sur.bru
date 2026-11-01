@@ -1,0 +1,27 @@
+meta {
+  name: Editar documento 43 (alice es member de sur)
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/documents/43
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "No deberia poder"
+  }
+}
+
+tests {
+  test("responde 403", function () {
+    expect(res.status).to.equal(403);
+  });
+}
+
+docs {
+  En el equipo sur alice solo es member: no es editor. Mira el log de documents-api (lineas Check).
+}

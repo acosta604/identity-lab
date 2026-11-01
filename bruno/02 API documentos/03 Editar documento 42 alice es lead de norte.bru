@@ -1,0 +1,27 @@
+meta {
+  name: Editar documento 42 (alice es lead de norte)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/documents/42
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "Plan comercial Norte v2"
+  }
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  editor = lead from team. Permitido para alice. Con dave da 403.
+}

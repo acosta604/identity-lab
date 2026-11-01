@@ -1,0 +1,39 @@
+meta {
+  name: Iniciar sesion en Entra (mock)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{entraUrl}}/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: client_credentials
+  client_id: {{user}}
+  client_secret: lab
+  scope: token-exchange-service
+}
+
+script:post-response {
+  bru.setVar("entraToken", res.body.access_token);
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("el token es para el servicio de exchange", function () {
+    const payload = JSON.parse(Buffer.from(res.body.access_token.split(".")[1], "base64url").toString());
+    expect(payload.aud).to.include("token-exchange-service");
+  });
+}
+
+docs {
+  Simula el inicio de sesion en Microsoft Entra ID. El mock emite un token con `oid`, `tid`
+  y `aud = token-exchange-service` (ver `infra/mock-entra/mock-entra.json`).
+  Cambia la persona con la variable de entorno `user`.
+}

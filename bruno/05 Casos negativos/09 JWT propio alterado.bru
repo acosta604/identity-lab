@@ -1,0 +1,33 @@
+meta {
+  name: JWT propio alterado
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/documents
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tamperedToken}}
+}
+
+script:pre-request {
+  const parts = (bru.getVar("at") || "x.x.x").split(".");
+  const payload = JSON.parse(Buffer.from(parts[1] || "e30", "base64url").toString() || "{}");
+  payload.sub = "bob";
+  parts[1] = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  bru.setVar("tamperedToken", parts.join("."));
+}
+
+tests {
+  test("responde 401", function () {
+    expect(res.status).to.equal(401);
+  });
+}
+
+docs {
+  Cambia el payload del JWT propio (sub = bob) sin volver a firmarlo: la firma ya no coincide.
+}

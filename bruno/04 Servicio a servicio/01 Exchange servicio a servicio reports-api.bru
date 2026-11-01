@@ -1,0 +1,39 @@
+meta {
+  name: Exchange servicio a servicio (reports-api)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/token/exchange
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: urn:ietf:params:oauth:grant-type:token-exchange
+  subject_token: {{at}}
+  audience: reports-api
+  actor: documents-api
+}
+
+script:post-response {
+  bru.setVar("s2sToken", res.body.access_token);
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.status).to.equal(200);
+  });
+
+  test("el nuevo token lleva act y otra audiencia", function () {
+    const p = JSON.parse(Buffer.from(res.body.access_token.split(".")[1], "base64url").toString());
+    expect(p.aud).to.include("reports-api");
+    expect(p.act.sub).to.equal("service:documents-api");
+  });
+}
+
+docs {
+  Una API cambia el JWT propio por otro para llamar a otra API en nombre de la persona.
+  No crea sesion, no usa cookies y no pasa por Entra.
+}
