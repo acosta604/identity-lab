@@ -1,0 +1,21 @@
+# Proxy para desarrollo: los dos servicios Java corren en tu maquina (IntelliJ) y no en Docker.
+{
+	auto_https off
+}
+
+:80 {
+	handle /token/* {
+		reverse_proxy host.docker.internal:8082
+	}
+	handle /session/* {
+		reverse_proxy host.docker.internal:8082
+	}
+	handle /api/* {
+		reverse_proxy host.docker.internal:8081
+	}
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+}

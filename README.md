@@ -6,6 +6,16 @@ Laboratorio para entender la solucion de identidad y autorizacion:
 
 Todo corre en local con Docker y herramientas gratuitas. Entra ID se simula con [mock-oauth2-server](https://github.com/navikt/mock-oauth2-server).
 
+**→ [Guía paso a paso para correrlo y probarlo en local](docs/guia-local.md)**
+
+## Arquitectura funcional
+
+![Arquitectura funcional](docs/arquitectura-funcional.png)
+
+El diagrama es editable: abre [`docs/arquitectura-funcional.excalidraw`](docs/arquitectura-funcional.excalidraw) en [excalidraw.com](https://excalidraw.com) (menú → Abrir).
+
+## Secuencia
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -81,8 +91,10 @@ Para que el repo sea publico se usan Gradle Plugin Portal y Maven Central. En el
 
 ## Arrancar
 
+Resumen rápido; el detalle, la configuración local, el modo de desarrollo con IntelliJ y la solución de problemas están en la [guía paso a paso](docs/guia-local.md).
+
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
 La primera vez tarda (descarga imagenes y dependencias de Gradle). Cuando `documents-api` imprima `OpenFGA listo`, abre:

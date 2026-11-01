@@ -1,0 +1,10 @@
+# Modo desarrollo: Docker solo levanta la infraestructura y los servicios Java corren en IntelliJ.
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up postgres openfga-migrate openfga mock-entra proxy
+services:
+  proxy:
+    volumes:
+      - ./infra/proxy/Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - ./web:/srv/web:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on: !reset []
