@@ -1,0 +1,113 @@
+name: identity-lab
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Crea las tablas internas de OpenFGA en la base "openfga" y termina.
+  openfga-migrate:
+    image: openfga/openfga:latest
+    command: migrate
+    environment:
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://postgres:postgres@postgres:5432/openfga?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  openfga:
+    image: openfga/openfga:latest
+    command: run
+    environment:
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://postgres:postgres@postgres:5432/openfga?sslmode=disable
+      OPENFGA_PLAYGROUND_ENABLED: "true"
+      OPENFGA_LOG_FORMAT: text
+    ports:
+      - "8080:8080"   # API HTTP
+      - "3000:3000"   # Playground
+    depends_on:
+      openfga-migrate:
+        condition: service_completed_successfully
+
+  # Hace de Microsoft Entra ID. Solo se usa para iniciar sesion.
+  mock-entra:
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.10
+    environment:
+      SERVER_PORT: "8080"
+      JSON_CONFIG_PATH: /config/mock-entra.json
+    volumes:
+      - ./infra/mock-entra/mock-entra.json:/config/mock-entra.json:ro
+    ports:
+      - "8090:8080"
+
+  token-exchange-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+      args:
+        MODULE: token-exchange-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/exchange
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      LAB_ISSUER: http://localhost/token
+      LAB_COOKIES_SECURE: "true"
+      LAB_ADMIN_ENABLED: "true"
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  documents-api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+      args:
+        MODULE: documents-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/documents
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      LAB_TOKEN_ISSUER: http://localhost/token
+      LAB_TOKEN_JWKS_URI: http://token-exchange-service:8082/token/.well-known/jwks.json
+      LAB_COOKIES_SECURE: "true"
+      LAB_FGA_API_URL: http://openfga:8080
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      openfga:
+        condition: service_started
+      token-exchange-service:
+        condition: service_started
+
+  # Pone el front y las APIs bajo el mismo origen (http://localhost) para que viajen las cookies.
+  proxy:
+    image: caddy:2
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web:/srv/web:ro
+    depends_on:
+      - token-exchange-service
+      - documents-api
+
+volumes:
+  pgdata:

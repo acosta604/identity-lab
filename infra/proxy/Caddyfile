@@ -1,0 +1,20 @@
+{
+	auto_https off
+}
+
+:80 {
+	handle /token/* {
+		reverse_proxy token-exchange-service:8082
+	}
+	handle /session/* {
+		reverse_proxy token-exchange-service:8082
+	}
+	handle /api/* {
+		reverse_proxy documents-api:8081
+	}
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+}

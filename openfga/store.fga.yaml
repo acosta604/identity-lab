@@ -1,0 +1,98 @@
+# Ejecutar con:  fga model test --tests openfga/store.fga.yaml
+# Las "tuples" de nivel superior son las guardadas (estructura y recursos).
+# Las "tuples" dentro de cada test simulan las tuplas contextuales que salen del token.
+name: identity-lab
+model_file: ./model.fga
+
+tuples:
+  - { user: "tenant:acme", relation: tenant, object: "organization:acme-ventas" }
+  - { user: "tenant:acme", relation: tenant, object: "organization:acme-marketing" }
+  - { user: "organization:acme-ventas", relation: organization, object: "team:acme-ventas-norte" }
+  - { user: "organization:acme-ventas", relation: organization, object: "team:acme-ventas-sur" }
+  - { user: "team:acme-ventas-norte", relation: team, object: "document:42" }
+  - { user: "team:acme-ventas-sur", relation: team, object: "document:43" }
+  - { user: "organization:acme-ventas", relation: organization, object: "document:44" }
+  - { user: "organization:acme-marketing", relation: organization, object: "document:77" }
+  - { user: "user:bob", relation: owner, object: "document:43" }
+
+tests:
+  - name: alice en acme-ventas (lead en norte, member en sur)
+    tuples:
+      - { user: "user:alice", relation: member, object: "tenant:acme" }
+      - { user: "user:alice", relation: member, object: "organization:acme-ventas" }
+      - { user: "user:alice", relation: lead, object: "team:acme-ventas-norte" }
+      - { user: "user:alice", relation: member, object: "team:acme-ventas-sur" }
+    check:
+      - user: "user:alice"
+        object: "document:42"
+        assertions: { viewer: true, editor: true, can_delete: false }
+      - user: "user:alice"
+        object: "document:43"
+        assertions: { viewer: true, editor: false, can_delete: false }
+      - user: "user:alice"
+        object: "document:44"
+        assertions: { viewer: true, editor: false }
+      - user: "user:alice"
+        object: "document:77"
+        assertions: { viewer: false }
+
+  - name: alice tras cambiar a acme-marketing (solo llega esa organizacion)
+    tuples:
+      - { user: "user:alice", relation: member, object: "tenant:acme" }
+      - { user: "user:alice", relation: member, object: "organization:acme-marketing" }
+    check:
+      - user: "user:alice"
+        object: "document:77"
+        assertions: { viewer: true, editor: false }
+      - user: "user:alice"
+        object: "document:42"
+        assertions: { viewer: false }
+
+  - name: dave, miembro de la organizacion sin equipos
+    tuples:
+      - { user: "user:dave", relation: member, object: "tenant:acme" }
+      - { user: "user:dave", relation: member, object: "organization:acme-ventas" }
+    check:
+      - user: "user:dave"
+        object: "document:44"
+        assertions: { viewer: true, editor: false }
+      - user: "user:dave"
+        object: "document:42"
+        assertions: { viewer: false }
+
+  - name: bob, admin de la organizacion
+    tuples:
+      - { user: "user:bob", relation: member, object: "tenant:acme" }
+      - { user: "user:bob", relation: admin, object: "organization:acme-ventas" }
+      - { user: "user:bob", relation: member, object: "team:acme-ventas-sur" }
+    check:
+      - user: "user:bob"
+        object: "document:42"
+        assertions: { viewer: true, editor: true, can_delete: true }
+      - user: "user:bob"
+        object: "document:43"
+        assertions: { editor: true, can_delete: true }
+      - user: "user:bob"
+        object: "document:77"
+        assertions: { viewer: false }
+
+  - name: alice ya no es lead de norte (token renovado sin ese equipo)
+    tuples:
+      - { user: "user:alice", relation: member, object: "tenant:acme" }
+      - { user: "user:alice", relation: member, object: "organization:acme-ventas" }
+      - { user: "user:alice", relation: member, object: "team:acme-ventas-sur" }
+    check:
+      - user: "user:alice"
+        object: "document:42"
+        assertions: { viewer: false, editor: false }
+
+  - name: admin del tenant administra todas sus organizaciones
+    tuples:
+      - { user: "user:root", relation: admin, object: "tenant:acme" }
+    check:
+      - user: "user:root"
+        object: "document:77"
+        assertions: { viewer: true, editor: true, can_delete: true }
+      - user: "user:root"
+        object: "document:42"
+        assertions: { editor: true }

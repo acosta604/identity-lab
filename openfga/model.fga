@@ -1,0 +1,34 @@
+model
+  schema 1.1
+
+type user
+
+# Membresias de tenant, organizacion y equipo: NO se guardan en OpenFGA.
+# Llegan en cada Check como tuplas contextuales, sacadas de los claims del token propio.
+
+type tenant
+  relations
+    define admin: [user]
+    define member: [user] or admin
+
+type organization
+  relations
+    define tenant: [tenant]
+    define admin: [user] or admin from tenant
+    define member: [user] or admin
+
+type team
+  relations
+    define organization: [organization]
+    define lead: [user]
+    define member: [user] or lead
+    define org_admin: admin from organization
+
+type document
+  relations
+    define organization: [organization]   # documento de toda la organizacion
+    define team: [team]                   # documento de un equipo
+    define owner: [user]
+    define editor: [user] or owner or lead from team or org_admin from team or admin from organization
+    define viewer: [user] or editor or member from team or member from organization
+    define can_delete: owner or org_admin from team or admin from organization

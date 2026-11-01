@@ -1,0 +1,101 @@
+{
+  "interactiveLogin": true,
+  "tokenCallbacks": [
+    {
+      "issuerId": "entra",
+      "tokenExpiry": 3600,
+      "requestMappings": [
+        {
+          "requestParam": "client_id",
+          "match": "alice",
+          "claims": {
+            "sub": "alice",
+            "oid": "00000000-0000-0000-0000-00000000a11c",
+            "tid": "lab-azure-tenant",
+            "aud": ["token-exchange-service"],
+            "preferred_username": "alice@lab.local",
+            "name": "Alice"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "bob",
+          "claims": {
+            "sub": "bob",
+            "oid": "00000000-0000-0000-0000-000000000b0b",
+            "tid": "lab-azure-tenant",
+            "aud": ["token-exchange-service"],
+            "preferred_username": "bob@lab.local",
+            "name": "Bob"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "carol",
+          "claims": {
+            "sub": "carol",
+            "oid": "00000000-0000-0000-0000-00000000ca01",
+            "tid": "lab-azure-tenant",
+            "aud": ["token-exchange-service"],
+            "preferred_username": "carol@lab.local",
+            "name": "Carol"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "dave",
+          "claims": {
+            "sub": "dave",
+            "oid": "00000000-0000-0000-0000-00000000da0e",
+            "tid": "lab-azure-tenant",
+            "aud": ["token-exchange-service"],
+            "preferred_username": "dave@lab.local",
+            "name": "Dave"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "mallory",
+          "claims": {
+            "sub": "mallory",
+            "oid": "00000000-0000-0000-0000-0000000ba0ad",
+            "tid": "lab-azure-tenant",
+            "aud": ["token-exchange-service"],
+            "preferred_username": "mallory@lab.local",
+            "name": "Mallory (sin cuenta interna)"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "graph-alice",
+          "claims": {
+            "sub": "alice",
+            "oid": "00000000-0000-0000-0000-00000000a11c",
+            "tid": "lab-azure-tenant",
+            "aud": ["https://graph.microsoft.com"],
+            "preferred_username": "alice@lab.local"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "otro-tenant-alice",
+          "claims": {
+            "sub": "alice",
+            "oid": "00000000-0000-0000-0000-00000000a11c",
+            "tid": "tenant-de-otra-empresa",
+            "aud": ["token-exchange-service"],
+            "preferred_username": "alice@lab.local"
+          }
+        },
+        {
+          "requestParam": "client_id",
+          "match": "lab-spa",
+          "claims": {
+            "tid": "lab-azure-tenant",
+            "aud": ["token-exchange-service"]
+          }
+        }
+      ]
+    }
+  ]
+}
